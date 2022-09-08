@@ -51,4 +51,42 @@
 | UsingArrayWithoutPooling | 1,355.4 ns | 19.23 ns | 17.04 ns | 2.5635 |    4024 B |
 |    UsingArrayWithPooling |   465.7 ns |  8.95 ns |  9.57 ns |      - |         - |
 ```
-В итоге получаем, что нагрузка на GC в данном случае полностью отсутствует. 
+
+### Memory pooling
+Представляет собой пул из блоков Memory<T>.
+- MemoryPool<T>.Shared - основан на ArrayPool
+- SlabMemoryPool : MemoryPool<byte> - пул памяти, который использует Kestrel
+
+```c#
+private void Process(Memory<char> memory)
+        {
+            var span = memory.Span;
+            for (var i = 0; i < 100; i++)
+            {
+                span[i] = (char)i;
+            }
+        }
+        
+        [Benchmark]
+        public void UseMemoryWithPooling()
+        {
+            using var memory = MemoryPool<char>.Shared.Rent();
+            Process(memory.Memory);       
+        }
+
+        [Benchmark]
+        public void UseMemoryWithoutPooling()
+        {
+            var memory = new Memory<char>(new char[100]);
+            Process(memory);
+        }
+```
+
+Получаем такие результаты:
+
+```
+|                  Method |      Mean |    Error |   StdDev |   Gen0 | Allocated |
+|------------------------ |----------:|---------:|---------:|-------:|----------:|
+|    UseMemoryWithPooling | 125.86 ns | 0.513 ns | 0.455 ns | 0.0153 |      24 B |
+| UseMemoryWithoutPooling |  97.34 ns | 0.889 ns | 0.788 ns | 0.1428 |     224 B |
+```

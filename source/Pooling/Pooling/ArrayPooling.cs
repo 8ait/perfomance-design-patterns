@@ -46,8 +46,15 @@
                 dataArray[i].Name = "";
                 dataArray[i].Age = i;
             }
-            Process(dataArray);
-            ArrayPool<Data>.Shared.Return(dataArray);
+
+            try
+            {
+                Process(dataArray);
+            }
+            finally
+            {
+                ArrayPool<Data>.Shared.Return(dataArray);   
+            }
         }
     }
 }

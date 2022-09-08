@@ -1,12 +1,14 @@
 ﻿namespace Pooling
 {
+    using System.Reflection;
+
     using BenchmarkDotNet.Running;
 
     class Program
     {
         static void Main(string[] args)
         {
-            _ = BenchmarkRunner.Run<ArrayPooling>();
+            _ = BenchmarkRunner.Run(Assembly.GetExecutingAssembly());
         }
     }
 }
