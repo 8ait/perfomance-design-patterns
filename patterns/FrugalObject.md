@@ -1,10 +1,12 @@
 # Frugal object (Скромный объект)
-- Проблема: нужно эффиктивно хранить набор данных, который можно представить в разных структурных формах (список, обособленный объект, два обособленных объекта).
-- Решение: вместо создания объекта для каждой формы, следует использовать что-то в виде объединения структурных форм и использования их в зависимости от контекста.
-- Преимущества: иногда ведет к уменьшению использования памяти и лучшей орагнизации данных в памяти. Использует преимущества JIT оптимизации, например избегает bound checks, если мы ограничлись использованием скромного объекта в виде обособленного объекта, а не списка.
-- Последствия: иногда приводит к более сложному API в сравнении с обычным подходом. Некоторые накладные расходы на производительность на проверки типов и дополнительные обертки.
+Представим, что в нашей программе, например веб-сервере, повсюду используются объекты типа список. Чаще всего в списке содержится всего один объект, но мы используем именно список, потому что в редких случаях объектов в списке может быть больше. Известно, что создание списка создает в .net определенные издержки, например bound checks(проверки CLR на выход за пределы массива) или выделение памяти под 4 элемента при неявном указании в конструкторе. В данном случае нам может помочь скромный объект.
 
-Ниже используется пример такого объекта - CompactList, когда в большинстве случаев требуется хранить в списке не более одного объекта. Таким образом, в качестве места хранения этой переменной можно выбрать свойство объекта.
+- Проблема: нужно эффективно хранить набор данных, который можно представить в разных структурных формах (список, обособленный объект, два обособленных объекта).
+- Решение: вместо создания объекта для каждой формы, следует использовать что-то вроде объединения структурных форм и их обработку в зависимости от контекста.
+- Преимущества: ведет к уменьшению использования памяти и лучшей организации данных в памяти. Использует преимущества JIT оптимизации, например избегает bound checks, если мы ограничлись использованием скромного объекта в виде обособленного объекта, а не списка.
+- Последствия: приводит к более сложному API. Создает дополнительные обертки и расходы на производительность для проверки типов.
+
+Ниже используется пример такого объекта - CompactList, когда в большинстве случаев требуется хранить в списке не более одного объекта.
 
 ```c#
 public struct CompactList<T> : IEnumerable<T>        
@@ -21,51 +23,49 @@ public struct CompactList<T> : IEnumerable<T>
 
 ```c#
 [MemoryDiagnoser]
-    public class Benchmark
+public class Benchmark
+{
+    [Benchmark]
+    public void UseCompactListWithOneObject()
     {
-        [Benchmark]
-        public void UseCompactListWithOneObject()
+        var compactList = new CompactList<int> { 1 };
+        foreach (var item in compactList)
         {
-            var compactList = new CompactList<int> { 1 };
-            foreach (var item in compactList)
-            {
-                var i = item * item;
-            }
-        }
-
-        [Benchmark]
-        public void UseListWithOneObject()
-        {
-            var list = new List<int> { 1 };
-            foreach (var item in list)
-            {
-                var i = item * item;
-            }
-        }
-        
-        [Benchmark]
-        public void UseCompactListWithOneMoreObject()
-        {
-            var compactList = new CompactList<int> { 1, 2, 3, 4 };
-            foreach (var item in compactList)
-            {
-                var i = item * item;
-            }
-        }
-
-        [Benchmark]
-        public void UseListWithOneMoreObject()
-        {
-            var list = new List<int> { 1, 2, 3, 4 };
-            foreach (var item in list)
-            {
-                var i = item * item;
-            }
+            var i = item * item;
         }
     }
+    [Benchmark]
+    public void UseListWithOneObject()
+    {
+        var list = new List<int> { 1 };
+        foreach (var item in list)
+        {
+            var i = item * item;
+        }
+    }
+    
+    [Benchmark]
+    public void UseCompactListWithOneMoreObject()
+    {
+        var compactList = new CompactList<int> { 1, 2, 3, 4 };
+        foreach (var item in compactList)
+        {
+            var i = item * item;
+        }
+    }
+    [Benchmark]
+    public void UseListWithOneMoreObject()
+    {
+        var list = new List<int> { 1, 2, 3, 4 };
+        foreach (var item in list)
+        {
+            var i = item * item;
+        }
+    }
+}
 ```
 
-Получаем такие результаты.
+Получаем слудеющие результаты:
 
 ```
 |                          Method |      Mean |    Error |    StdDev |  Gen 0 | Allocated |
