@@ -8,7 +8,8 @@
     {
         static void Main(string[] args)
         {
-            _ = BenchmarkRunner.Run(Assembly.GetExecutingAssembly());
+            // _ = BenchmarkRunner.Run(Assembly.GetExecutingAssembly());
+            _ = BenchmarkRunner.Run<ObjectPooling>();
         }
     }
 }

@@ -90,3 +90,34 @@ private void Process(Memory<char> memory)
 |    UseMemoryWithPooling | 125.86 ns | 0.513 ns | 0.455 ns | 0.0153 |      24 B |
 | UseMemoryWithoutPooling |  97.34 ns | 0.889 ns | 0.788 ns | 0.1428 |     224 B |
 ```
+
+### Object pooling
+Довольно редко используется, так как цена за использование больше чем его достоинств, но можно уменьшить нагрзуку на память в случаях:
+ - на тяжелое и затратное создание объектов
+ - на объект который часто создается и сам по себе много весит
+
+```c#
+        [Benchmark]
+        public void ObjectWithPooling()
+        {
+            var test = _defaultObjectPool.Get();
+            Proccess(test);
+            _defaultObjectPool.Return(test);
+        }
+
+        [Benchmark]
+        public void ObjectWithoutPooling()
+        {
+            var test = new TestObject();
+            Proccess(test);
+        }
+```
+
+Получаем такие результаты:
+```
+|               Method |        Mean |     Error |    StdDev |   Gen0 | Allocated |
+|--------------------- |------------:|----------:|----------:|-------:|----------:|
+|    ObjectWithPooling |    25.90 ns |  0.451 ns |  0.602 ns |      - |         - |
+| ObjectWithoutPooling | 5,499.84 ns | 94.234 ns | 88.147 ns | 6.4087 |   10048 B |
+
+```
