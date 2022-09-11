@@ -34,6 +34,7 @@ public class Benchmark
             var i = item * item;
         }
     }
+
     [Benchmark]
     public void UseListWithOneObject()
     {
@@ -53,6 +54,7 @@ public class Benchmark
             var i = item * item;
         }
     }
+    
     [Benchmark]
     public void UseListWithOneMoreObject()
     {
