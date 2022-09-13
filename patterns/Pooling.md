@@ -54,9 +54,9 @@ public void UsingArrayWithPooling()
 ```
 
 ## Memory pooling [microsoft docs](https://docs.microsoft.com/ru-ru/dotnet/api/system.buffers.memorypool-1)
-Представляет собой пул из блоков Memory<T>.
-- MemoryPool<T>.Shared - основан на ArrayPool;
-- SlabMemoryPool : MemoryPool<byte> - пул памяти, который использует Kestrel.
+Представляет собой пул из блоков Memory\<T\>.
+- MemoryPool\<T\>.Shared - основан на ArrayPool
+- SlabMemoryPool : MemoryPool\<byte\> - пул памяти, который использует Kestrel
 
 ```c#
 private void Process(Memory<char> memory)
